@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Posts & Comments - JSON Server CRUD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.3s;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        td {
+            padding: 12px 15px;
+        }
+
+        /* Deleted row styles */
+        .deleted-row {
+            background-color: #ffe6e6 !important;
+            opacity: 0.7;
+        }
+
+        .deleted-row:hover {
+            background-color: #ffd6d6 !important;
+        }
+
+        /* Button in table */
+        .btn-delete,
+        .btn-edit,
+        .btn-restore,
+        .btn-comments {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: all 0.2s;
+        }
+
+        .btn-delete {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #ff3838;
+            transform: scale(1.05);
+        }
+
+        .btn-edit {
+            background: #ffa502;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #ff9000;
+            transform: scale(1.05);
+        }
+
+        .btn-restore {
+            background: #2ed573;
+            color: white;
+        }
+
+        .btn-restore:hover {
+            background: #26de81;
+            transform: scale(1.05);
+        }
+
+        .btn-comments {
+            background: #5f27cd;
+            color: white;
+        }
+
+        .btn-comments:hover {
+            background: #341f97;
+            transform: scale(1.05);
+        }
+
+        /* Comments Section */
+        #comments-section {
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .comment-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .comment-text {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-edit-comment,
+        .btn-delete-comment {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-edit-comment {
+            background: #ffa502;
+            color: white;
+        }
+
+        .btn-edit-comment:hover {
+            background: #ff9000;
+        }
+
+        .btn-delete-comment {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-delete-comment:hover {
+            background: #ff3838;
+        }
+
+        #comments-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Scrollbar styling */
+        #comments-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #comments-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        #comments-list::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            color: #856404;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>📝 Quản lý Posts & Comments</h1>
+
+        <!-- Form Posts -->
+        <div class="card" id="post-form">
+            <h2>✏️ Thêm/Sửa Post</h2>
+            <div class="note">
+                <strong>💡 Lưu ý:</strong> Để tạo post mới, bỏ trống ID (hệ thống sẽ tự động tạo ID).
+            </div>
+            <div class="form-group">
+                <label for="id_txt">ID (để trống khi tạo mới):</label>
+                <input type="text" id="id_txt" placeholder="Bỏ trống để tự động tạo ID" />
+            </div>
+            <div class="form-group">
+                <label for="title_txt">Tiêu đề:</label>
+                <input type="text" id="title_txt" placeholder="Nhập tiêu đề post" />
+            </div>
+            <div class="form-group">
+                <label for="view_txt">Lượt xem:</label>
+                <input type="number" id="view_txt" placeholder="Nhập số lượt xem" />
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="Save()">💾 Lưu</button>
+                <button class="btn btn-secondary" onclick="ClearForm()">🔄 Làm mới</button>
+            </div>
+        </div>
+
+        <!-- Table Posts -->
+        <div class="card">
+            <h2>📋 Danh sách Posts</h2>
+            <div class="note">
+                <strong>🗑️ Xóa mềm:</strong> Posts bị xóa mềm sẽ được đánh dấu bằng gạch ngang và có thể khôi phục.
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tiêu đề</th>
+                        <th>Lượt xem</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="card" id="comments-section">
+            <div class="comments-header">
+                <h2>💬 Comments cho Post <span class="badge" id="current-post-id"></span></h2>
+                <button class="btn btn-secondary" onclick="CloseComments()">✖ Đóng</button>
+            </div>
+
+            <!-- Comment Form -->
+            <div style="margin-bottom: 20px;">
+                <input type="hidden" id="comment_id" />
+                <div class="form-group">
+                    <label for="comment_text">Nội dung comment:</label>
+                    <textarea id="comment_text" placeholder="Nhập nội dung comment..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="SaveComment()">💾 Lưu Comment</button>
+                    <button class="btn btn-secondary" onclick="ClearCommentForm()">🔄 Làm mới</button>
+                </div>
+            </div>
+
+            <!-- Comments List -->
+            <h3 style="color: #667eea; margin-bottom: 15px;">Danh sách Comments:</h3>
+            <div id="comments-list">
+                <!-- Comments will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
